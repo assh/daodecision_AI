@@ -23,7 +23,7 @@ export default function Page() {
   const live = useRef<HTMLDivElement>(null);
 
   // Snapshot (smart) state — accepts space or full proposal URL
-  const [snapInput, setSnapInput] = useState("uniswap"); // e.g. "uniswap" or "https://snapshot.org/#/ens.eth/proposal/0x..."
+  const [snapInput, setSnapInput] = useState("arbitrumfoundation.eth"); // e.g. "uniswap" or "https://snapshot.org/#/ens.eth/proposal/0x..."
   const [snapLimit, setSnapLimit] = useState(5);
   const [importingSnap, setImportingSnap] = useState(false);
 
