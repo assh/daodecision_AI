@@ -1,26 +1,97 @@
-@import "tailwindcss";
-
+/* ---------- Tokens & theming ---------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0b0b0b;
+  --fg: #f0f0f0;
+  --muted: #b0b0b0;
+  --card: rgba(255,255,255,.06);
+  --card-bd: rgba(255,255,255,.14);
+  --ring: #67e8f9;
+  --accent1: #22d3ee; /* cyan */
+  --accent2: #8b5cf6; /* violet */
+  --shadow: 0 12px 36px rgba(0,0,0,.35);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ---------- Reset & base ---------- */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--fg); background: var(--bg);
+  background-image:
+    radial-gradient(1200px 600px at 20% -10%, rgba(120,119,198,.22), transparent 60%),
+    radial-gradient(1000px 500px at 90% 0%, rgba(56,189,248,.18), transparent 55%),
+    radial-gradient(800px 400px at 60% 120%, rgba(244,114,182,.12), transparent 60%);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ---------- Layout ---------- */
+.container{max-width: 1000px; margin: 0 auto; padding: 24px 20px 48px}
+.topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
+.brand{display:flex; align-items:center; gap:.5rem; font-weight:700; letter-spacing:.2px}
+.brand .dot{width:10px; height:10px; border-radius:50%; background: var(--accent1); box-shadow:0 0 0 4px rgba(34,211,238,.15)}
+.brand .accent{background: linear-gradient(90deg, var(--accent1), var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.hero{padding: 8px 0 18px}
+.chip{
+  display:inline-flex; align-items:center; gap:.45rem; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  color: color-mix(in oklab, var(--fg) 70%, transparent);
+  background: color-mix(in oklab, var(--fg) 6%, transparent); border:1px solid var(--card-bd);
+  padding:.35rem .6rem; border-radius:999px;
 }
+.pulse{width:8px; height:8px; border-radius:50%; background: var(--accent1); animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+.headline{margin: .4rem 0 0; font-size: clamp(32px, 5vw, 48px); font-weight:800; line-height:1.1}
+.gradient{-webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-image: linear-gradient(90deg, #e5e7eb, #a5f3fc, #c7d2fe)}
+.subhead{margin-top:.4rem; color: var(--muted)}
+
+/* ---------- Cards & elements ---------- */
+.card{
+  background: var(--card); border:1px solid var(--card-bd); backdrop-filter: blur(8px);
+  border-radius:16px; padding:18px; margin:14px 0; box-shadow: var(--shadow);
+  animation: fadeIn .4s ease both;
+}
+.card:hover{transform: translateY(-2px); transition: transform .2s ease}
+@keyframes fadeIn{from{opacity:0; transform:translateY(4px)}to{opacity:1; transform:none}}
+
+label{display:block; font-size:.9rem; color: color-mix(in oklab, var(--fg) 75%, transparent); margin-top:.6rem}
+input, textarea{
+  width:100%; margin-top:.35rem; font-size:.95rem; color:var(--fg);
+  background: color-mix(in oklab, var(--fg) 6%, transparent);
+  border: 1px solid var(--card-bd); border-radius:12px; padding:.85rem 1rem; outline:none;
+  transition: border-color .15s ease, box-shadow .15s ease, background .2s ease;
+}
+input:focus, textarea:focus{ border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 25%, transparent) }
+textarea{ min-height: 160px; resize: vertical }
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex; align-items:center; gap:.5rem; padding:.7rem 1rem; border-radius:12px; font-weight:600; font-size:.95rem; cursor:pointer; border:1px solid transparent}
+.btn:disabled{opacity:.6; cursor:not-allowed}
+.btn-primary{ color:#0b0b0b; background: linear-gradient(135deg, var(--accent1), var(--accent2)); }
+.btn-primary:hover{filter:brightness(1.05); transform: translateY(-1px)}
+.btn-outline{ color:var(--fg); background:transparent; border-color: var(--card-bd) }
+.btn-outline:hover{background: color-mix(in oklab, var(--fg) 8%, transparent)}
+.btn-ghost{ color:var(--fg); background: transparent; }
+.btn-ghost:hover{ background: color-mix(in oklab, var(--fg) 6%, transparent) }
+
+/* ---------- Result lists ---------- */
+.rule{height:1px; width:100%; background: linear-gradient(90deg, color-mix(in oklab, var(--fg) 45%, transparent), transparent); margin-top:.5rem}
+ul{list-style:none; margin-top:.5rem; padding-left:.8rem}
+li{margin:.28rem 0}
+li::before{content:""; display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:.5rem; background: var(--accent1); box-shadow:0 0 0 3px color-mix(in oklab, var(--fg) 6%, transparent)}
+
+/* ---------- Footer ---------- */
+.footer{margin-top:16px; color: color-mix(in oklab, var(--fg) 60%, transparent); font-size:12px; text-align:center}
+
+/* ---------- Toast & skeleton ---------- */
+.toast{position:fixed; right:20px; bottom:20px; background: var(--card); border:1px solid var(--card-bd); color:var(--fg);
+  padding:.7rem 1rem; border-radius:12px; box-shadow: var(--shadow); animation: toastIn .2s ease both}
+@keyframes toastIn{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
+
+.skel{
+  border-radius: 12px; background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.12), rgba(255,255,255,.06));
+  background-size: 200% 100%; animation: skel 1.2s linear infinite;
+}
+@keyframes skel{to{background-position: -200% 0}}
+.skel-line{height:12px; margin:10px 0}
