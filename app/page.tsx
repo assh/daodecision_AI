@@ -9,6 +9,24 @@ type Result = {
   recommendation: string;
 };
 
+type SnapshotSpace = { id: string; name?: string };
+type SnapshotProposal = {
+  id: string;
+  title: string;
+  body: string;
+  author: string;
+  start: number;
+  end: number;
+  state: string;
+  link: string;
+  space?: SnapshotSpace;
+  choices?: string[];
+  created?: number;
+  scores_state?: string;
+};
+
+type DiscourseImport = { title: string; text: string };
+
 export default function Page() {
   // Analyser state
   const [title, setTitle] = useState("");
@@ -23,7 +41,7 @@ export default function Page() {
   const live = useRef<HTMLDivElement>(null);
 
   // Snapshot (smart) state — accepts space or full proposal URL
-  const [snapInput, setSnapInput] = useState("arbitrumfoundation.eth"); // e.g. "uniswap" or "https://snapshot.org/#/ens.eth/proposal/0x..."
+  const [snapInput, setSnapInput] = useState("uniswap");
   const [snapLimit, setSnapLimit] = useState(5);
   const [importingSnap, setImportingSnap] = useState(false);
 
@@ -87,13 +105,14 @@ ${r.recommendation}`;
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, text, context }),
       });
-      const j = await r.json();
-      if (r.status >= 400 || j.error)
-        throw new Error(j.error || "Service error");
+      const j = (await r.json()) as Result | { error?: string };
+      if (r.status >= 400 || "error" in j)
+        throw new Error(("error" in j && j.error) || "Service error");
       setRes(j as Result);
       smoothScrollTo("#results");
-    } catch (e: any) {
-      setErr(e?.message || "Something went wrong");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setErr(msg || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -126,19 +145,22 @@ ${r.recommendation}`;
         : `space=${encodeURIComponent(val)}&limit=${snapLimit}&state=all`;
 
       const r = await fetch(`/api/snapshot?${qs}`);
-      const j = await r.json();
+      const j = (await r.json()) as {
+        error?: string;
+        proposals?: SnapshotProposal[];
+      };
       if (!r.ok || j.error) throw new Error(j.error || "Snapshot fetch error");
 
-      const proposals = j.proposals as Array<any>;
-      if (!proposals?.length) {
+      const proposals = j.proposals ?? [];
+      if (!proposals.length) {
         alert("No proposals found.");
         return;
       }
 
-      let chosen = proposals[0];
+      let chosen: SnapshotProposal = proposals[0];
       if (proposals.length > 1) {
         const titles = proposals
-          .map((p: any, i: number) => `${i + 1}. ${p.title} (${p.space?.id})`)
+          .map((p, i) => `${i + 1}. ${p.title} (${p.space?.id})`)
           .join("\n");
         const idxStr = prompt(
           `Select a proposal number:\n\n${titles}\n\nEnter 1-${proposals.length}:`
@@ -171,8 +193,9 @@ ${chosen.body}
       );
       setText(blob);
       showToast("Snapshot proposal imported");
-    } catch (e: any) {
-      alert(e?.message || "Failed to import from Snapshot.");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      alert(msg || "Failed to import from Snapshot.");
     } finally {
       setImportingSnap(false);
     }
@@ -190,7 +213,9 @@ ${chosen.body}
         discourseBase
       )}&topic=${encodeURIComponent(topicId)}`;
       const r = await fetch(url);
-      const j = await r.json();
+      const j = (await r.json()) as {
+        error?: string;
+      } & Partial<DiscourseImport>;
       if (!r.ok || j.error) throw new Error(j.error || "Discourse fetch error");
 
       setTitle(j.title || "");
@@ -199,8 +224,9 @@ ${chosen.body}
         `Title: ${j.title}\n\nSource: ${discourseBase}/t/${topicId}\n\nBody\n${j.text}`
       );
       showToast("Discourse topic imported");
-    } catch (e: any) {
-      alert(e?.message || "Failed to import from Discourse.");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      alert(msg || "Failed to import from Discourse.");
     } finally {
       setImportingDisc(false);
     }
@@ -254,7 +280,7 @@ ${chosen.body}
               <input
                 value={snapInput}
                 onChange={(e) => setSnapInput(e.target.value)}
-                placeholder="e.g. uniswap.eth  •  or paste https://snapshot.org/#/space/proposal/0x…"
+                placeholder="e.g. uniswap  •  or paste https://snapshot.org/#/space/proposal/0x…"
               />
             </div>
             <div>

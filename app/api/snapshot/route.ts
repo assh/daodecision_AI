@@ -4,6 +4,25 @@ export const dynamic = "force-dynamic";
 
 const SNAPSHOT_URL = "https://hub.snapshot.org/graphql";
 
+type SnapshotSpace = { id: string; name?: string };
+export type SnapshotProposal = {
+  id: string;
+  title: string;
+  body: string;
+  author: string;
+  start: number;
+  end: number;
+  state: string;
+  link: string;
+  space?: SnapshotSpace;
+  choices?: string[];
+  created?: number;
+  scores_state?: string;
+};
+
+type SnapshotListResp = { data?: { proposals?: SnapshotProposal[] } };
+type SnapshotOneResp = { data?: { proposal?: SnapshotProposal | null } };
+
 const QUERY_LIST = `
   query Proposals($space: [String!], $limit: Int, $state: String) {
     proposals(
@@ -32,8 +51,7 @@ const QUERY_ONE = `
 function extractProposalIdFromUrl(u: string): string | null {
   try {
     const url = new URL(u);
-    // snapshot urls look like: https://snapshot.org/#/ens.eth/proposal/0xHASH
-    const hash = url.hash || ""; // "#/space/proposal/0xhash"
+    const hash = url.hash || ""; // "#/space/proposal/0xHASH"
     const m = hash.match(/\/proposal\/([0-9a-zA-Zx]+)/i);
     return m?.[1] ?? null;
   } catch {
@@ -58,14 +76,15 @@ export async function GET(req: NextRequest) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ query: QUERY_ONE, variables: { id } }),
       });
+
       if (!r.ok) {
         const txt = await r.text();
-        return NextResponse.json({ error: `Snapshot upstream ${r.status}`, debug: txt.slice(0,300) }, { status: 500 });
+        return NextResponse.json({ error: `Snapshot upstream ${r.status}`, debug: txt.slice(0, 300) }, { status: 500 });
       }
-      const j = await r.json();
+
+      const j = (await r.json()) as SnapshotOneResp;
       const p = j?.data?.proposal;
-      if (!p) return NextResponse.json({ proposals: [] });
-      return NextResponse.json({ proposals: [p] });
+      return NextResponse.json({ proposals: p ? [p] : [] });
     }
 
     if (!space) {
@@ -77,14 +96,17 @@ export async function GET(req: NextRequest) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ query: QUERY_LIST, variables: { space: [space], limit, state } }),
     });
+
     if (!r.ok) {
       const txt = await r.text();
-      return NextResponse.json({ error: `Snapshot upstream ${r.status}`, debug: txt.slice(0,300) }, { status: 500 });
+      return NextResponse.json({ error: `Snapshot upstream ${r.status}`, debug: txt.slice(0, 300) }, { status: 500 });
     }
-    const data = await r.json();
+
+    const data = (await r.json()) as SnapshotListResp;
     const proposals = data?.data?.proposals ?? [];
     return NextResponse.json({ proposals });
-  } catch (e: any) {
-    return NextResponse.json({ error: "Snapshot fetch failed", debug: String(e) }, { status: 500 });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: "Snapshot fetch failed", debug: msg }, { status: 500 });
   }
 }
