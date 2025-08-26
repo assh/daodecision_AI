@@ -90,8 +90,8 @@ The tool is designed for:
 ### Installation
 
 ```bash
-git clone https://github.com/yourname/dao-decision-dashboard
-cd dao-decision-dashboard
+git clone https://github.com/assh/daodecision_AI
+cd daodecision_AI
 npm install
 echo "OPENAI_API_KEY=sk-xxxx...." > .env.local
 npm run dev
