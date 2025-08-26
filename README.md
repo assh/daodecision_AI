@@ -3,6 +3,9 @@
 A web application that converts DAO governance proposals into decision-ready summaries. Users can paste a proposal or import from Snapshot or Discourse forums, then receive a structured analysis including TL;DR, Pros, Cons, Risks, and a Recommendation.
 
 ---
+## Live Demo
+
+The live demo is hosted on Netlify at https://daodecision.asishpanda.com/ . I have updated the domain name to make the url more trustable and easy to remember at a glance.
 
 ## Why
 
